@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Job Tracking Portal</title>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+
+    header {
+      background: linear-gradient(to right, #4CAF50, #2196F3, #FF9800, #F44336); /* Gradient from green to red */
+      color: #fff;
+      padding: 20px;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    nav ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    nav li {
+      margin-right: 20px;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      color: #e0e0e0;
+    }
+
+    main {
+      padding: 40px;
+    }
+
+    section {
+      background-color: #fff;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #apply-job {
+      border-left: 6px solid #4CAF50; /* Green */
+    }
+
+    #track-application {
+      border-left: 6px solid #2196F3; /* Blue */
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    form input, form button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+    form button {
+      padding: 8px 12px; /* Adjust padding to make the button smaller */
+      font-size: 14px; /* Adjust font size */
+      background-color: #4CAF50; /* Green */
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px; /* Smaller border radius */
+      transition: background-color 0.3s;
+    }
+
+    form button:hover {
+      background-color: #45a049;
+    }
+
+    #application-status {
+      font-weight: bold;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    .status-pending {
+      color: #FFC107; /* Yellow */
+    }
+
+    .status-approved {
+      color: #4CAF50; /* Green */
+    }
+
+    .status-rejected {
+      color: #F44336; /* Red */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Job Tracking Portal</h1>
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Apply for a Job</a></li>
+        <li><a href="#">Track Application</a></li>
+        <li><a href="#">Create Job Posting</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="apply-job">
+      <h2>Apply for a Job</h2>
+      <form id="job-application-form" enctype="multipart/form-data">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="resume">Upload Resume:</label>
+        <input type="file" id="resume" name="resume" required>
+
+        <label for="job-title">Job Title:</label>
+        <input type="text" id="job-title" name="job-title" required>
+
+        <button type="submit">Submit Application</button>
+      </form>
+      <div id="application-status"></div>
+    </section>
+
+    <section id="track-application">
+      <h2>Track Your Application</h2>
+      <form id="application-tracking-form">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <button type="submit">Check Status</button>
+      </form>
+      <div id="application-status"></div>
+    </section>
+
+    <section id="create-job-posting">
+      <h2>Create Job Posting</h2>
+      <form id="job-posting-form">
+        <label for="job-title">Job Title:</label>
+        <input type="text" id="job-title" name="job-title" required>
+
+        <label for="job-description">Job Description:</label>
+        <textarea id="job-description" name="job-description" required></textarea>
+
+        <label for="job-requirements">Job Requirements:</label>
+        <textarea id="job-requirements" name="job-requirements" required></textarea>
+
+        <button type="submit">Create Posting</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    // Job Application Form Submission
+    document.getElementById('job-application-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      var formData = new FormData(this);
+
+      fetch('backend.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('application-status').textContent = data;
+        if (data.includes('successfully')) {
+          document.getElementById('application-status').classList.add('status-approved');
+        } else {
+          document.getElementById('application-status').classList.add('status-rejected');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('application-status').textContent = 'Error submitting application.';
+        document.getElementById('application-status').classList.add('status-rejected');
+      });
+    });
+
+    // Application Tracking Form Submission
+    document.getElementById('application-tracking-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      var email = document.getElementById('email').value;
+
+      fetch('backend.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({ email: email })
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('application-status').textContent = data;
+        if (data.includes('Pending')) {
+          document.getElementById('application-status').classList.add('status-pending');
+        } else if (data.includes('Approved')) {
+          document.getElementById('application-status').classList.add('status-approved');
+        } else {
+          document.getElementById('application-status').classList.add('status-rejected');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('application-status').textContent = 'Error fetching application status.';
+        document.getElementById('application-status').classList.add('status-rejected');
+      });
+    });
+
+    // Job Posting Creation Form Submission
+    document.getElementById('job-posting-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      var formData = new FormData(this);
+
+      fetch('backend.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        alert(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating job posting.');
+      });
+    });
+  </script>
+</body>
+</html>
